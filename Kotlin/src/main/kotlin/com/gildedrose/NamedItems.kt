@@ -21,9 +21,9 @@ class NamedItem(
     override fun updated(): IItem {
         val updatedSellIn = sellIn.dec()
         val updatedQuality = if (sellIn.isExpired()) {
-            quality.dec(2)
+            quality.add(-2)
         } else {
-            quality.dec(1)
+            quality.add(-1)
         }
 
         return NamedItem(name, updatedSellIn, updatedQuality)
@@ -36,7 +36,7 @@ class AgedBrie(override val sellIn: SellIn.Mutable, override val quality: Qualit
 
     override fun updated(): IItem {
         val updatedSellIn = sellIn.dec()
-        val updatedQuality = quality.inc()
+        val updatedQuality = quality.add(1)
 
         return AgedBrie(updatedSellIn, updatedQuality)
     }
@@ -49,9 +49,9 @@ class Backstage(override val sellIn: SellIn.Mutable, override val quality: Quali
     override fun updated(): IItem {
         val updatedSellIn = sellIn.dec()
         val updatedQuality = when (updatedSellIn.value) {
-            in 11..50 -> quality.inc(1)
-            in 6..10 -> quality.inc(2)
-            in 0..5 -> quality.inc(3)
+            in 11..50 -> quality.add(1)
+            in 6..10 -> quality.add(2)
+            in 0..5 -> quality.add(3)
             else -> Quality.Mutable.ZERO
         }
 
@@ -80,26 +80,25 @@ class ConjuredItem(
     override fun updated(): IItem {
         val updatedSellIn = sellIn.dec()
         val updatedQuality = if (sellIn.isExpired()) {
-            quality.dec(2 * 2)
+            quality.add(-2 * 2)
         } else {
-            quality.dec(1 * 2)
+            quality.add(-1 * 2)
         }
         return ConjuredItem(name, updatedSellIn, updatedQuality)
     }
 }
 
-
 sealed class SellIn {
 
     abstract val value: Int
 
-    fun isExpired(): Boolean {
-        return value < 0
-    }
-
     data class Mutable(override val value: Int) : SellIn() {
         fun dec(): Mutable {
             return Mutable(value - 1)
+        }
+
+        fun isExpired(): Boolean {
+            return value < 0
         }
     }
 
@@ -122,12 +121,8 @@ sealed class Quality {
             val ZERO = Mutable(0)
         }
 
-        fun inc(amount: Int = 1): Mutable {
+        fun add(amount: Int): Mutable {
             return Mutable(value + amount)
-        }
-
-        fun dec(amount: Int = 1): Mutable {
-            return Mutable(value - amount)
         }
     }
 
