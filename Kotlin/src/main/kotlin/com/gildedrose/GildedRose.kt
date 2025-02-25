@@ -3,56 +3,33 @@ package com.gildedrose
 class GildedRose(var items: List<Item>) {
 
     fun updateQuality() {
-        for (i in items.indices) {
-            if (items[i].name != "Aged Brie" && items[i].name != "Backstage passes to a TAFKAL80ETC concert") {
-                if (items[i].quality > 0) {
-                    if (items[i].name != "Sulfuras, Hand of Ragnaros") {
-                        items[i].quality = items[i].quality - 1
-                    }
-                }
-            } else {
-                if (items[i].quality < 50) {
-                    items[i].quality = items[i].quality + 1
 
-                    if (items[i].name == "Backstage passes to a TAFKAL80ETC concert") {
-                        if (items[i].sellIn < 11) {
-                            if (items[i].quality < 50) {
-                                items[i].quality = items[i].quality + 1
-                            }
-                        }
+        items = items
+            .map { item ->
+                val mutableSellIn = SellIn.Mutable(item.sellIn)
+                val immutableSellIn = SellIn.Immutable(item.sellIn)
+                when {
+                    item.name == "Aged Brie" -> AgedBrie(mutableSellIn, Quality.Mutable(item.quality))
+                    item.name == "Backstage passes to a TAFKAL80ETC concert" -> Backstage(
+                        mutableSellIn,
+                        Quality.Mutable(item.quality)
+                    )
 
-                        if (items[i].sellIn < 6) {
-                            if (items[i].quality < 50) {
-                                items[i].quality = items[i].quality + 1
-                            }
-                        }
-                    }
-                }
+                    item.name == "Sulfuras, Hand of Ragnaros" -> Sulfuras(
+                        immutableSellIn,
+                        Quality.Immutable(item.quality)
+                    )
+
+                    item.name.startsWith("Conjured") -> ConjuredItem(
+                        item.name,
+                        mutableSellIn,
+                        Quality.Mutable(item.quality)
+                    )
+
+                    else -> NamedItem(item.name, mutableSellIn, Quality.Mutable(item.quality))
+                }.updated()
             }
-
-            if (items[i].name != "Sulfuras, Hand of Ragnaros") {
-                items[i].sellIn = items[i].sellIn - 1
-            }
-
-            if (items[i].sellIn < 0) {
-                if (items[i].name != "Aged Brie") {
-                    if (items[i].name != "Backstage passes to a TAFKAL80ETC concert") {
-                        if (items[i].quality > 0) {
-                            if (items[i].name != "Sulfuras, Hand of Ragnaros") {
-                                items[i].quality = items[i].quality - 1
-                            }
-                        }
-                    } else {
-                        items[i].quality = items[i].quality - items[i].quality
-                    }
-                } else {
-                    if (items[i].quality < 50) {
-                        items[i].quality = items[i].quality + 1
-                    }
-                }
-            }
-        }
+            .map { it.toItem() }
+            .toList()
     }
-
 }
-
