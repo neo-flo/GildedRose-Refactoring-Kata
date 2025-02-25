@@ -6,15 +6,30 @@ class GildedRose(var items: List<Item>) {
 
         items = items
             .map { item ->
-                val namedItem = when {
-                    item.name == "Aged Brie" -> AgedBrie(item.sellIn, item.quality)
-                    item.name == "Backstage passes to a TAFKAL80ETC concert" -> Backstage(item.sellIn, item.quality)
-                    item.name == "Sulfuras, Hand of Ragnaros" -> Sulfuras(item.sellIn, item.quality)
-                    item.name.startsWith("Conjured") -> ConjuredItem(item.name, item.sellIn, item.quality)
-                    else -> NamedItem(item.name, item.sellIn, item.quality)
-                }
-                namedItem.updated()
+                val mutableSellIn = SellIn.Mutable(item.sellIn)
+                val immutableSellIn = SellIn.Immutable(item.sellIn)
+                when {
+                    item.name == "Aged Brie" -> AgedBrie(mutableSellIn, Quality.Mutable(item.quality))
+                    item.name == "Backstage passes to a TAFKAL80ETC concert" -> Backstage(
+                        mutableSellIn,
+                        Quality.Mutable(item.quality)
+                    )
+
+                    item.name == "Sulfuras, Hand of Ragnaros" -> Sulfuras(
+                        immutableSellIn,
+                        Quality.Immutable(item.quality)
+                    )
+
+                    item.name.startsWith("Conjured") -> ConjuredItem(
+                        item.name,
+                        mutableSellIn,
+                        Quality.Mutable(item.quality)
+                    )
+
+                    else -> NamedItem(item.name, mutableSellIn, Quality.Mutable(item.quality))
+                }.updated()
             }
+            .map { it.toItem() }
             .toList()
     }
 }
